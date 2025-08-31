@@ -212,7 +212,13 @@ class ScheduleResource extends Resource
                     ->label('Waktu Selesai')
                     ->icon('heroicon-o-clock')
                     ->color('danger'),
-                Tables\Columns\TextColumn::make('status')
+                Tables\Columns\SelectColumn::make('status')
+                    ->options([
+                        'scheduled' => 'Dijadwalkan',
+                        'in_progress' => 'Sedang Dikerjakan',
+                        'completed' => 'Selesai',
+                        'cancelled' => 'Dibatalkan',
+                    ])
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'scheduled' => 'info',
@@ -226,13 +232,8 @@ class ScheduleResource extends Resource
                         'completed' => 'heroicon-o-check-circle',
                         'cancelled' => 'heroicon-o-x-circle',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'scheduled' => 'Dijadwalkan',
-                        'in_progress' => 'Sedang Dikerjakan',
-                        'completed' => 'Selesai',
-                        'cancelled' => 'Dibatalkan',
-                        default => $state,
-                    }),
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('customer_name')
                     ->searchable()
                     ->label('Nama Pelanggan')
