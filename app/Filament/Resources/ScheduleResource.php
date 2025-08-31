@@ -308,7 +308,8 @@ class ScheduleResource extends Resource
                     ->action(function (Schedule $record, array $data): void {
                         $record->update(['status' => $data['status']]);
                     })
-                    ->color('warning'),
+                    ->color('warning')
+                    ->visible(fn (Schedule $record): bool => $record->status !== 'completed'),
                 // Action lain yang sudah ada
                 Tables\Actions\Action::make('createReport')
                     ->label('Buat Laporan')
