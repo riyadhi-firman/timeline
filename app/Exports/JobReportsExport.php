@@ -17,8 +17,8 @@ class JobReportsExport implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
-            'ID',
-            'Jadwal ID',
+            'ID Laporan',
+            'ID Jadwal',
             'Teknisi',
             'Divisi',
             'Judul Jadwal',
@@ -26,9 +26,11 @@ class JobReportsExport implements FromCollection, WithHeadings, WithMapping
             'Lokasi',
             'Waktu Mulai',
             'Waktu Selesai',
-            'Deskripsi Pekerjaan',
-            'Catatan',
-            'Status',
+            'Isi Laporan',
+            'Material yang Digunakan',
+            'Status Penyelesaian',
+            'Catatan Penyelesaian',
+            'Waktu Laporan',
             'Dibuat Pada',
         ];
     }
@@ -45,6 +47,27 @@ class JobReportsExport implements FromCollection, WithHeadings, WithMapping
             return $technician->division->name;
         })->unique()->join(', ');
 
+        // Format material yang digunakan
+        $materialsUsed = '-';
+        if ($report->materials_used && is_array($report->materials_used)) {
+            $materials = collect($report->materials_used)->map(function ($item, $key) {
+                if (is_array($item) && isset($item['name'])) {
+                    return "{$item['name']} ({$item['quantity']} {$item['unit']})";
+                }
+                return null;
+            })->filter()->join(', ');
+            $materialsUsed = $materials ?: '-';
+        }
+
+        // Format status penyelesaian
+        $completionStatus = match ($report->completion_status) {
+            'completed' => 'Selesai',
+            'partial' => 'Sebagian Selesai',
+            'pending' => 'Tertunda',
+            'cancelled' => 'Dibatalkan',
+            default => $report->completion_status,
+        };
+
         return [
             $report->id,
             $report->schedule->id,
@@ -55,9 +78,11 @@ class JobReportsExport implements FromCollection, WithHeadings, WithMapping
             $report->schedule->location,
             $report->schedule->start_time->format('d/m/Y H:i'),
             $report->schedule->end_time->format('d/m/Y H:i'),
-            $report->description,
-            $report->notes,
-            $report->status,
+            $report->report_content,
+            $materialsUsed,
+            $completionStatus,
+            $report->completion_notes ?? '-',
+            $report->reported_at->format('d/m/Y H:i'),
             $report->created_at->format('d/m/Y H:i'),
         ];
     }
