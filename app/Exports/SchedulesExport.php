@@ -11,7 +11,19 @@ class SchedulesExport implements FromCollection, WithHeadings, WithMapping
 {
     public function collection()
     {
-        return Schedule::with(['technicians.user', 'technicians.division'])->get();
+        $query = Schedule::with(['technicians.user', 'technicians.division']);
+        
+        // Jika user bukan super admin, filter berdasarkan divisi
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->whereHas('technicians.division', function ($query) use ($userDivisionId) {
+                    $query->where('id', $userDivisionId);
+                });
+            }
+        }
+        
+        return $query->get();
     }
 
     public function headings(): array

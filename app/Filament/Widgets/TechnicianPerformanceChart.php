@@ -52,12 +52,21 @@ class TechnicianPerformanceChart extends ChartWidget
 
     protected function getData(): array
     {
-        $data = Schedule::where('status', 'completed')
+        $query = Schedule::where('status', 'completed')
             ->whereBetween('end_time', [Carbon::now()->subDays(30), Carbon::now()])
             ->join('schedule_technician', 'schedules.id', '=', 'schedule_technician.schedule_id')
             ->join('technicians', 'schedule_technician.technician_id', '=', 'technicians.id')
-            ->join('users', 'technicians.user_id', '=', 'users.id')
-            ->select('users.name', DB::raw('count(*) as total'))
+            ->join('users', 'technicians.user_id', '=', 'users.id');
+
+        // Jika user bukan super admin, filter berdasarkan divisi
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->where('technicians.division_id', $userDivisionId);
+            }
+        }
+
+        $data = $query->select('users.name', DB::raw('count(*) as total'))
             ->groupBy('users.name')
             ->orderBy('total', 'desc')
             ->limit(10)

@@ -37,9 +37,20 @@ class CompletionTimeChart extends ChartWidget
             $startOfMonth = Carbon::now()->subMonths(5 - $index)->startOfMonth();
             $endOfMonth = Carbon::now()->subMonths(5 - $index)->endOfMonth();
 
-            $schedules = Schedule::where('status', 'completed')
-                ->whereBetween('end_time', [$startOfMonth, $endOfMonth])
-                ->get();
+            $query = Schedule::where('status', 'completed')
+                ->whereBetween('end_time', [$startOfMonth, $endOfMonth]);
+
+            // Jika user bukan super admin, filter berdasarkan divisi
+            if (!auth()->user()->hasRole('super_admin')) {
+                if (auth()->user()->supervisor) {
+                    $userDivisionId = auth()->user()->supervisor->division_id;
+                    $query->whereHas('technicians.division', function ($query) use ($userDivisionId) {
+                        $query->where('id', $userDivisionId);
+                    });
+                }
+            }
+
+            $schedules = $query->get();
 
             $totalMinutes = 0;
             $count = 0;

@@ -26,11 +26,20 @@ class DivisionWorkloadChart extends ChartWidget
 
     protected function getData(): array
     {
-        $data = Schedule::whereBetween('start_time', [Carbon::now()->subDays(30), Carbon::now()])
+        $query = Schedule::whereBetween('start_time', [Carbon::now()->subDays(30), Carbon::now()])
             ->join('schedule_technician', 'schedules.id', '=', 'schedule_technician.schedule_id')
             ->join('technicians', 'schedule_technician.technician_id', '=', 'technicians.id')
-            ->join('divisions', 'technicians.division_id', '=', 'divisions.id')
-            ->select('divisions.name', DB::raw('count(*) as total'))
+            ->join('divisions', 'technicians.division_id', '=', 'divisions.id');
+
+        // Jika user bukan super admin, filter berdasarkan divisi
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->where('divisions.id', $userDivisionId);
+            }
+        }
+
+        $data = $query->select('divisions.name', DB::raw('count(*) as total'))
             ->groupBy('divisions.name')
             ->get();
 

@@ -11,7 +11,20 @@ class ScheduleRequestsExport implements FromCollection, WithHeadings, WithMappin
 {
     public function collection()
     {
-        return ScheduleRequest::with(['requester', 'approver'])->get();
+        $query = ScheduleRequest::with(['requester', 'approver']);
+        
+        // Jika user bukan super admin, filter berdasarkan divisi
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                // Filter berdasarkan divisi dari user yang membuat request
+                $query->whereHas('requester.supervisor', function ($query) use ($userDivisionId) {
+                    $query->where('division_id', $userDivisionId);
+                });
+            }
+        }
+        
+        return $query->get();
     }
 
     public function headings(): array
