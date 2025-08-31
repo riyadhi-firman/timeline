@@ -1,3 +1,72 @@
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
 
-@config 'tailwind.config.js';
+/* Custom Global Search Styling */
+.fi-global-search-field {
+    @apply relative;
+}
+
+.fi-global-search-field input {
+    @apply bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600;
+    @apply focus:ring-amber-500 focus:border-amber-500;
+    @apply placeholder-gray-500 dark:placeholder-gray-400;
+    @apply transition-all duration-200;
+}
+
+.fi-global-search-field input:focus {
+    @apply shadow-lg;
+}
+
+/* Global Search Results Styling */
+.fi-global-search-results-ctn {
+    @apply border border-gray-200 dark:border-gray-700;
+    @apply shadow-xl;
+}
+
+.fi-global-search-result {
+    @apply hover:bg-amber-50 dark:hover:bg-amber-900/20;
+    @apply transition-colors duration-150;
+}
+
+.fi-global-search-result-link {
+    @apply text-gray-900 dark:text-gray-100;
+}
+
+.fi-global-search-result-link h4 {
+    @apply font-semibold text-gray-900 dark:text-white;
+}
+
+.fi-global-search-result-link dl {
+    @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+/* Search Icon Styling */
+.fi-global-search-field .fi-input-wrp-prefix {
+    @apply text-gray-400 dark:text-gray-500;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .fi-global-search-field input {
+        @apply text-sm;
+    }
+    
+    .fi-global-search-results-ctn {
+        @apply max-h-80;
+    }
+}
+
+/* Animation for search results */
+.fi-global-search-results-ctn {
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
