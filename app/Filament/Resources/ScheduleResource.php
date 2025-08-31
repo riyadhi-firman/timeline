@@ -22,10 +22,22 @@ class ScheduleResource extends Resource
 
     protected static ?string $navigationGroup = 'Jadwal Pekerjaan';
 
-    // Tambahkan metode ini untuk menampilkan badge count
+    // Tambahkan metode ini untuk menampilkan badge count dengan division-based filtering
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        $query = static::getModel()::query();
+        
+        // Jika user bukan super admin, filter berdasarkan divisi
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->whereHas('technicians.division', function ($query) use ($userDivisionId) {
+                    $query->where('id', $userDivisionId);
+                });
+            }
+        }
+        
+        return $query->count();
     }
 
     // Opsional: Ubah warna badge (default: primary)

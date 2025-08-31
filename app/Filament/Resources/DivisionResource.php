@@ -23,7 +23,17 @@ class DivisionResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        $query = static::getModel()::query();
+        
+        // Jika user bukan super admin, filter berdasarkan divisi
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->where('id', $userDivisionId);
+            }
+        }
+        
+        return $query->count();
     }
 
     public static function getNavigationBadgeColor(): ?string

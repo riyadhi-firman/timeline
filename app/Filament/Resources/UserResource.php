@@ -20,10 +20,22 @@ class UserResource extends Resource
 
     protected static ?string $navigationGroup = 'Administration';
 
-    // Tambahkan metode ini untuk menampilkan badge count
+    // Tambahkan metode ini untuk menampilkan badge count dengan division-based filtering
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        $query = static::getModel()::query();
+        
+        // Jika user bukan super admin, filter berdasarkan divisi
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->whereHas('supervisor', function ($query) use ($userDivisionId) {
+                    $query->where('division_id', $userDivisionId);
+                });
+            }
+        }
+        
+        return $query->count();
     }
 
     // Opsional: Ubah warna badge (default: primary)

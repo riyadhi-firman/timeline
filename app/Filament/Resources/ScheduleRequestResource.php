@@ -28,6 +28,31 @@ class ScheduleRequestResource extends Resource
 
     protected static ?string $navigationGroup = 'Jadwal Pekerjaan';
 
+    // Tambahkan metode ini untuk menampilkan badge count dengan division-based filtering
+    public static function getNavigationBadge(): ?string
+    {
+        $query = static::getModel()::query();
+        
+        // Jika user bukan super admin, filter berdasarkan divisi
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->whereHas('requester.supervisor', function ($query) use ($userDivisionId) {
+                    $query->where('division_id', $userDivisionId);
+                });
+            }
+        }
+        
+        // Hanya hitung yang status pending
+        return $query->where('status', 'pending')->count();
+    }
+
+    // Opsional: Ubah warna badge (default: primary)
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'primary'; // Opsi lain: 'success', 'warning', 'danger', 'secondary'
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -218,8 +243,5 @@ class ScheduleRequestResource extends Resource
         ];
     }
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::where('status', 'pending')->count();
-    }
+
 }
