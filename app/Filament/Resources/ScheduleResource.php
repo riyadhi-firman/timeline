@@ -346,6 +346,23 @@ class ScheduleResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        
+        // Jika user bukan super admin, filter berdasarkan divisi
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->whereHas('technicians.division', function ($query) use ($userDivisionId) {
+                    $query->where('id', $userDivisionId);
+                });
+            }
+        }
+        
+        return $query;
+    }
+
     public static function getPages(): array
     {
         return [

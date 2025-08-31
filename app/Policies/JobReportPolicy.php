@@ -15,6 +15,12 @@ class JobReportPolicy
      */
     public function viewAny(User $user): bool
     {
+        // Super admin bisa melihat semua data
+        if ($user->hasRole('super_admin')) {
+            return $user->can('view_any_job::report');
+        }
+
+        // User lain hanya bisa melihat data sesuai divisinya
         return $user->can('view_any_job::report');
     }
 
@@ -23,6 +29,23 @@ class JobReportPolicy
      */
     public function view(User $user, JobReport $jobReport): bool
     {
+        // Super admin bisa melihat semua data
+        if ($user->hasRole('super_admin')) {
+            return $user->can('view_job::report');
+        }
+
+        // User lain hanya bisa melihat data sesuai divisinya
+        if ($user->supervisor) {
+            $userDivisionId = $user->supervisor->division_id;
+            $jobReportHasUserDivision = $jobReport->schedule->technicians()
+                ->whereHas('division', function ($query) use ($userDivisionId) {
+                    $query->where('id', $userDivisionId);
+                })
+                ->exists();
+            
+            return $user->can('view_job::report') && $jobReportHasUserDivision;
+        }
+
         return $user->can('view_job::report');
     }
 
