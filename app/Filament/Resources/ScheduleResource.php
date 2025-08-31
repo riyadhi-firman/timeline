@@ -293,7 +293,22 @@ class ScheduleResource extends Resource
                     ->label('Buat Laporan')
                     ->icon('heroicon-o-document-text')
                     ->url(fn (Schedule $record): string => route('filament.admin.resources.job-reports.create', ['schedule_id' => $record->id]))
-                    ->visible(fn (Schedule $record): bool => $record->status === 'in_progress' || $record->status === 'completed'),
+                    ->visible(fn (Schedule $record): bool => 
+                        ($record->status === 'in_progress' || $record->status === 'completed') && 
+                        $record->jobReports()->count() === 0
+                    ),
+                Tables\Actions\Action::make('viewReport')
+                    ->label('Lihat Laporan')
+                    ->icon('heroicon-o-eye')
+                    ->url(fn (Schedule $record): string => 
+                        $record->jobReports()->first() 
+                            ? route('filament.admin.resources.job-reports.edit', $record->jobReports()->first()) 
+                            : '#'
+                    )
+                    ->visible(fn (Schedule $record): bool => 
+                        $record->jobReports()->count() > 0
+                    )
+                    ->color('success'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
