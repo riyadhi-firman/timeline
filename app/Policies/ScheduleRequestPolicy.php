@@ -15,6 +15,12 @@ class ScheduleRequestPolicy
      */
     public function viewAny(User $user): bool
     {
+        // Super admin bisa melihat semua data
+        if ($user->hasRole('super_admin')) {
+            return $user->can('view_any_schedule::request');
+        }
+
+        // User lain hanya bisa melihat data sesuai divisinya
         return $user->can('view_any_schedule::request');
     }
 
@@ -23,6 +29,20 @@ class ScheduleRequestPolicy
      */
     public function view(User $user, ScheduleRequest $scheduleRequest): bool
     {
+        // Super admin bisa melihat semua data
+        if ($user->hasRole('super_admin')) {
+            return $user->can('view_schedule::request');
+        }
+
+        // User lain hanya bisa melihat data sesuai divisinya
+        if ($user->supervisor) {
+            $userDivisionId = $user->supervisor->division_id;
+            $requestHasUserDivision = $scheduleRequest->requester->supervisor && 
+                $scheduleRequest->requester->supervisor->division_id === $userDivisionId;
+            
+            return $user->can('view_schedule::request') && $requestHasUserDivision;
+        }
+
         return $user->can('view_schedule::request');
     }
 
