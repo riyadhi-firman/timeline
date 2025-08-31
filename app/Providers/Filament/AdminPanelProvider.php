@@ -38,6 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->maxContentWidth('full')
             ->favicon(asset('favicon.ico'))
             ->globalSearch(true)
+            ->globalSearchProvider(\App\Providers\GlobalSearchProvider::class)
             ->resources([
                 config('filament-logger.activity_resource'),
             ])

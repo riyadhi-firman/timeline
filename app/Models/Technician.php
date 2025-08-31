@@ -58,4 +58,24 @@ class Technician extends Model
     {
         return $this->belongsToMany(Schedule::class, 'schedule_technician');
     }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['user.name', 'phone', 'skill_level'];
+    }
+
+    public function getGlobalSearchResultTitle(): string
+    {
+        return "Teknisi - {$this->user->name}";
+    }
+
+    public function getGlobalSearchResultDetails(): array
+    {
+        return [
+            'Divisi' => $this->division->name,
+            'Telepon' => $this->phone ?? '-',
+            'Skill Level' => $this->skill_level ?? '-',
+            'Total Jadwal' => $this->schedules()->count(),
+        ];
+    }
 }

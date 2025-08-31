@@ -47,4 +47,24 @@ class Supervisor extends Model
     {
         return $this->belongsTo(Division::class);
     }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['user.name', 'phone'];
+    }
+
+    public function getGlobalSearchResultTitle(): string
+    {
+        return "Supervisor - {$this->user->name}";
+    }
+
+    public function getGlobalSearchResultDetails(): array
+    {
+        return [
+            'Divisi' => $this->division->name,
+            'Telepon' => $this->phone ?? '-',
+            'Email' => $this->user->email,
+            'Bergabung' => $this->created_at->format('d M Y'),
+        ];
+    }
 }

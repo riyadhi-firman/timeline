@@ -73,4 +73,34 @@ class JobReport extends Model
     {
         return $this->belongsTo(Technician::class);
     }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['report_content', 'completion_notes'];
+    }
+
+    public function getGlobalSearchResultTitle(): string
+    {
+        return "Laporan #{$this->id} - {$this->schedule->title}";
+    }
+
+    public function getGlobalSearchResultDetails(): array
+    {
+        $technicianNames = $this->schedule->technicians->map(function ($technician) {
+            return $technician->user->name;
+        })->join(', ');
+
+        return [
+            'Jadwal' => $this->schedule->title,
+            'Teknisi' => $technicianNames,
+            'Status' => match ($this->completion_status) {
+                'completed' => 'Selesai',
+                'partial' => 'Sebagian Selesai',
+                'pending' => 'Tertunda',
+                'cancelled' => 'Dibatalkan',
+                default => $this->completion_status,
+            },
+            'Tanggal' => $this->reported_at->format('d M Y'),
+        ];
+    }
 }

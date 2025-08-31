@@ -56,4 +56,30 @@ class ScheduleRequest extends Model
 
         return $schedule;
     }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['title', 'customer_name', 'description', 'location', 'notes'];
+    }
+
+    public function getGlobalSearchResultTitle(): string
+    {
+        return "Request #{$this->id} - {$this->title}";
+    }
+
+    public function getGlobalSearchResultDetails(): array
+    {
+        return [
+            'Pelanggan' => $this->customer_name,
+            'Lokasi' => $this->location,
+            'Status' => match ($this->status) {
+                'pending' => 'Pending',
+                'approved' => 'Disetujui',
+                'rejected' => 'Ditolak',
+                default => $this->status,
+            },
+            'Diminta Oleh' => $this->requester->name,
+            'Tanggal' => $this->created_at->format('d M Y'),
+        ];
+    }
 }

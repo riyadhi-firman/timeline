@@ -85,4 +85,27 @@ class User extends Authenticatable
     {
         return $this->hasMany(Schedule::class, 'created_by');
     }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'email'];
+    }
+
+    public function getGlobalSearchResultTitle(): string
+    {
+        return "User - {$this->name}";
+    }
+
+    public function getGlobalSearchResultDetails(): array
+    {
+        $roles = $this->roles->pluck('name')->join(', ');
+        $division = $this->supervisor ? $this->supervisor->division->name : '-';
+
+        return [
+            'Email' => $this->email,
+            'Role' => $roles ?: '-',
+            'Divisi' => $division,
+            'Bergabung' => $this->created_at->format('d M Y'),
+        ];
+    }
 }

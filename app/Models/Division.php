@@ -56,4 +56,24 @@ class Division extends Model
     {
         return $this->hasMany(Technician::class);
     }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'code', 'description'];
+    }
+
+    public function getGlobalSearchResultTitle(): string
+    {
+        return "Divisi - {$this->name}";
+    }
+
+    public function getGlobalSearchResultDetails(): array
+    {
+        return [
+            'Kode' => $this->code,
+            'Deskripsi' => $this->description ?? '-',
+            'Total Teknisi' => $this->technicians()->count(),
+            'Total Supervisor' => $this->supervisors()->count(),
+        ];
+    }
 }
