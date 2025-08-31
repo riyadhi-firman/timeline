@@ -212,13 +212,7 @@ class ScheduleResource extends Resource
                     ->label('Waktu Selesai')
                     ->icon('heroicon-o-clock')
                     ->color('danger'),
-                Tables\Columns\SelectColumn::make('status')
-                    ->options([
-                        'scheduled' => 'Dijadwalkan',
-                        'in_progress' => 'Sedang Dikerjakan',
-                        'completed' => 'Selesai',
-                        'cancelled' => 'Dibatalkan',
-                    ])
+                Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'scheduled' => 'info',
@@ -231,6 +225,13 @@ class ScheduleResource extends Resource
                         'in_progress' => 'heroicon-o-play',
                         'completed' => 'heroicon-o-check-circle',
                         'cancelled' => 'heroicon-o-x-circle',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'scheduled' => 'Dijadwalkan',
+                        'in_progress' => 'Sedang Dikerjakan',
+                        'completed' => 'Selesai',
+                        'cancelled' => 'Dibatalkan',
+                        default => $state,
                     })
                     ->sortable()
                     ->searchable(),
@@ -289,6 +290,25 @@ class ScheduleResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\Action::make('changeStatus')
+                    ->label('Ubah Status')
+                    ->icon('heroicon-o-arrow-path')
+                    ->form([
+                        Forms\Components\Select::make('status')
+                            ->label('Status Baru')
+                            ->options([
+                                'scheduled' => 'Dijadwalkan',
+                                'in_progress' => 'Sedang Dikerjakan',
+                                'completed' => 'Selesai',
+                                'cancelled' => 'Dibatalkan',
+                            ])
+                            ->required()
+                            ->default(fn (Schedule $record) => $record->status),
+                    ])
+                    ->action(function (Schedule $record, array $data): void {
+                        $record->update(['status' => $data['status']]);
+                    })
+                    ->color('warning'),
                 // Action lain yang sudah ada
                 Tables\Actions\Action::make('createReport')
                     ->label('Buat Laporan')
