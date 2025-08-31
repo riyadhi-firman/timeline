@@ -76,4 +76,19 @@ class Division extends Model
             'Total Supervisor' => $this->supervisors()->count(),
         ];
     }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        $query = parent::getGlobalSearchEloquentQuery();
+        
+        // Apply division-based filtering
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->where('id', $userDivisionId);
+            }
+        }
+        
+        return $query;
+    }
 }

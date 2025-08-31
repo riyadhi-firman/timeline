@@ -115,6 +115,23 @@ class Schedule extends Model
         ];
     }
 
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        $query = parent::getGlobalSearchEloquentQuery();
+        
+        // Apply division-based filtering
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->whereHas('technicians.division', function ($query) use ($userDivisionId) {
+                    $query->where('id', $userDivisionId);
+                });
+            }
+        }
+        
+        return $query;
+    }
+
     // Tambahkan method ini ke model Schedule
     public function jobReports()
     {

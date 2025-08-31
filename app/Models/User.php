@@ -108,4 +108,21 @@ class User extends Authenticatable
             'Bergabung' => $this->created_at->format('d M Y'),
         ];
     }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        $query = parent::getGlobalSearchEloquentQuery();
+        
+        // Apply division-based filtering
+        if (!auth()->user()->hasRole('super_admin')) {
+            if (auth()->user()->supervisor) {
+                $userDivisionId = auth()->user()->supervisor->division_id;
+                $query->whereHas('supervisor', function ($query) use ($userDivisionId) {
+                    $query->where('division_id', $userDivisionId);
+                });
+            }
+        }
+        
+        return $query;
+    }
 }
