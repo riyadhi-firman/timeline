@@ -14,14 +14,32 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
+        // Super admin bisa melihat semua data
+        if ($user->hasRole('super_admin')) {
+            return $user->can('view_any_user');
+        }
+
+        // User lain hanya bisa melihat data sesuai divisinya
         return $user->can('view_any_user');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user): bool
+    public function view(User $user, User $model): bool
     {
+        // Super admin bisa melihat semua data
+        if ($user->hasRole('super_admin')) {
+            return $user->can('view_user');
+        }
+
+        // User lain hanya bisa melihat data sesuai divisinya
+        if ($user->supervisor && $model->supervisor) {
+            $userDivisionId = $user->supervisor->division_id;
+            $modelDivisionId = $model->supervisor->division_id;
+            return $user->can('view_user') && $userDivisionId === $modelDivisionId;
+        }
+
         return $user->can('view_user');
     }
 

@@ -15,6 +15,12 @@ class SupervisorPolicy
      */
     public function viewAny(User $user): bool
     {
+        // Super admin bisa melihat semua data
+        if ($user->hasRole('super_admin')) {
+            return $user->can('view_any_supervisor');
+        }
+
+        // User lain hanya bisa melihat data sesuai divisinya
         return $user->can('view_any_supervisor');
     }
 
@@ -23,6 +29,17 @@ class SupervisorPolicy
      */
     public function view(User $user, Supervisor $supervisor): bool
     {
+        // Super admin bisa melihat semua data
+        if ($user->hasRole('super_admin')) {
+            return $user->can('view_supervisor');
+        }
+
+        // User lain hanya bisa melihat data sesuai divisinya
+        if ($user->supervisor) {
+            $userDivisionId = $user->supervisor->division_id;
+            return $user->can('view_supervisor') && $supervisor->division_id === $userDivisionId;
+        }
+
         return $user->can('view_supervisor');
     }
 
